@@ -59,7 +59,7 @@ const Signup = () => {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-radial from-slate-100 to-slate-200 p-4">
-      <div className="w-full max-w-md rounded-3xl border border-slate-100 bg-white/80 p-8 shadow-2xl backdrop-blur-md">
+      <div className="w-full max-w-md rounded-3xl border border-slate-100 bg-white/80 p-8 shadow-2xl backdrop-blur-md animate-scale-in">
         <div className="mb-6 text-center">
           <h2 className="text-3xl font-bold tracking-tight text-slate-900">Create Account</h2>
           <p className="mt-2 text-slate-500">Sign up as a normal user to start rating stores</p>

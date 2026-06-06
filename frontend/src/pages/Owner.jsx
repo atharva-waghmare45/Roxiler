@@ -84,7 +84,7 @@ const Owner = () => {
     <div className="min-h-screen bg-slate-50 pb-12">
       <Navbar />
 
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 animate-slide-up">
         {/* Title Section */}
         <div className="mb-8 text-left">
           <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 md:text-4xl">Store Owner Dashboard</h1>
@@ -96,7 +96,7 @@ const Owner = () => {
         {/* Metrics Summary Grid */}
         <div className="mb-8 grid grid-cols-1 gap-5 sm:grid-cols-3">
           {/* Card 1: Total Stores */}
-          <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-xs flex items-center space-x-4">
+          <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-xs flex items-center space-x-4 hover-lift">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-purple-50 text-purple-600">
               <Store className="h-6 w-6" />
             </div>
@@ -107,7 +107,7 @@ const Owner = () => {
           </div>
 
           {/* Card 2: Overall Rating */}
-          <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-xs flex items-center space-x-4">
+          <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-xs flex items-center space-x-4 hover-lift">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 text-amber-500">
               <Star className="h-6 w-6 fill-amber-400 stroke-amber-500" />
             </div>
@@ -121,7 +121,7 @@ const Owner = () => {
           </div>
 
           {/* Card 3: Total Reviews */}
-          <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-xs flex items-center space-x-4">
+          <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-xs flex items-center space-x-4 hover-lift">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
               <MessageSquare className="h-6 w-6" />
             </div>

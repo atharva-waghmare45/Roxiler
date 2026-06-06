@@ -244,7 +244,7 @@ const Admin = () => {
       <Navbar />
 
       {/* Main Container */}
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 animate-slide-up">
         
         {/* Header Title */}
         <div className="mb-8 text-left">
@@ -255,7 +255,7 @@ const Admin = () => {
         {/* Dashboard Stat Counters (Mobile First Grid) */}
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-3 mb-8">
           {/* Card: Total Users */}
-          <div className="relative overflow-hidden rounded-3xl border border-slate-100 bg-white p-6 shadow-xs flex items-center justify-between">
+          <div className="relative overflow-hidden rounded-3xl border border-slate-100 bg-white p-6 shadow-xs flex items-center justify-between hover-lift">
             <div className="space-y-1 text-left">
               <span className="text-sm font-semibold text-slate-400">Total System Users</span>
               <p className="text-3xl font-bold text-slate-900">{stats.totalUsers}</p>
@@ -266,7 +266,7 @@ const Admin = () => {
           </div>
 
           {/* Card: Total Stores */}
-          <div className="relative overflow-hidden rounded-3xl border border-slate-100 bg-white p-6 shadow-xs flex items-center justify-between">
+          <div className="relative overflow-hidden rounded-3xl border border-slate-100 bg-white p-6 shadow-xs flex items-center justify-between hover-lift">
             <div className="space-y-1 text-left">
               <span className="text-sm font-semibold text-slate-400">Registered Stores</span>
               <p className="text-3xl font-bold text-slate-900">{stats.totalStores}</p>
@@ -277,7 +277,7 @@ const Admin = () => {
           </div>
 
           {/* Card: Total Ratings */}
-          <div className="relative overflow-hidden rounded-3xl border border-slate-100 bg-white p-6 shadow-xs flex items-center justify-between">
+          <div className="relative overflow-hidden rounded-3xl border border-slate-100 bg-white p-6 shadow-xs flex items-center justify-between hover-lift">
             <div className="space-y-1 text-left">
               <span className="text-sm font-semibold text-slate-400">Ratings Submitted</span>
               <p className="text-3xl font-bold text-slate-900">{stats.totalRatings}</p>

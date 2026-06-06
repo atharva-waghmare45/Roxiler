@@ -1,47 +1,128 @@
 # User Authentication System Guide
 
-This guide details the validation criteria, route definitions, controllers, and test suites implemented for the Store Rating User Authentication features.
+This guide details the validation criteria, API endpoints, security implementation, and test coverage for the authentication features.
 
 ---
 
 ## 1. Input Validation Rules
 
-To protect database integrity and provide clear frontend feedback, the validators implemented in [validators.js](file:///c:/Users/athar/Desktop/Roxiler/backend/src/utils/validators.js) enforce the following rules:
+Validators implemented in `backend/src/utils/validators.js` enforce the following rules on both frontend and backend:
 
-- **Name Constraints:**
-  - Length must be between `20` and `60` characters (enforced in signup controller).
-- **Address Constraints:**
-  - Length must not exceed `400` characters.
-- **Email Validation:**
-  - Evaluated against standard regex pattern: `/^[^\s@]+@[^\s@]+\.[^\s@]+$/`
-- **Password Constraints:**
-  - Length must be between `8` and `16` characters.
-  - Must include at least one uppercase letter (checked via `/[A-Z]/`).
-  - Must include at least one special character (checked via `/[!@#$%^&*(),.?":{}|<>]/`).
+| Field | Rule | Regex/Check |
+|-------|------|-------------|
+| **Name** | 20–60 characters | `.trim().length` check |
+| **Email** | Valid email format | `/^[^\s@]+@[^\s@]+\.[^\s@]+$/` |
+| **Address** | Max 400 characters | `.trim().length` check |
+| **Password** | 8–16 characters | `.length` check |
+| **Password** | ≥1 uppercase letter | `/[A-Z]/` |
+| **Password** | ≥1 special character | `/[!@#$%^&*(),.?":{}|<>]/` |
 
 ---
 
-## 2. API Endpoint Implementations
+## 2. API Endpoints
 
-The endpoints are declared in [auth.routes.js](file:///c:/Users/athar/Desktop/Roxiler/backend/src/routes/auth.routes.js) and bound to actions inside [auth.controller.js](file:///c:/Users/athar/Desktop/Roxiler/backend/src/controllers/auth.controller.js):
+All auth endpoints are defined in `backend/src/routes/auth.routes.js` and handled by `backend/src/controllers/auth.controller.js`.
 
-### A. Signup Route (`POST /api/auth/signup`)
-- **Action:** Creates a new database row in the `users` table.
-- **Constraints:** Hardcoded to assign the `NORMAL_USER` role. Guest logins cannot specify their role on registration.
-- **Security:** Hashes the password using `bcryptjs` before storage.
+### A. User Registration — `POST /api/auth/signup`
 
-### B. Login Route (`POST /api/auth/login`)
-- **Action:** Compares inputted password with DB hash.
-- **Payload:** Issues a 24-hour expiration JWT containing `{ id, role }` signed using the `JWT_SECRET` key from the backend environment.
+| Aspect | Detail |
+|--------|--------|
+| **Auth Required** | No |
+| **Role Assigned** | Always `NORMAL_USER` (hardcoded) |
+| **Request Body** | `{ name, email, address, password }` |
+| **Success Response** | `201` — `{ message: "User registered successfully.", user: { id, name, email, role } }` |
+| **Error Cases** | `400` — Validation failure; `409` — Email already registered |
+| **Security** | Password hashed with `bcryptjs` (salt rounds: 10) before storage |
 
-### C. Password Reset Route (`POST /api/auth/change-password`)
-- **Access:** Protected by the `verifyToken` middleware in [auth.js](file:///c:/Users/athar/Desktop/Roxiler/backend/src/middlewares/auth.js).
-- **Action:** Validates constraints on the new password, checks current password validity, and updates the database row.
+### B. User Login — `POST /api/auth/login`
+
+| Aspect | Detail |
+|--------|--------|
+| **Auth Required** | No |
+| **Request Body** | `{ email, password }` |
+| **Success Response** | `200` — `{ message, token, user: { id, name, email, role } }` |
+| **Token** | JWT signed with `JWT_SECRET`, payload: `{ id, role }`, expires in `24h` |
+| **Error Cases** | `401` — Invalid email or password |
+
+### C. Change Password — `POST /api/auth/change-password`
+
+| Aspect | Detail |
+|--------|--------|
+| **Auth Required** | Yes (`verifyToken` middleware) |
+| **Request Body** | `{ oldPassword, newPassword }` |
+| **Success Response** | `200` — `{ message: "Password updated successfully." }` |
+| **Validation** | New password must meet all password rules |
+| **Error Cases** | `400` — Validation failure; `401` — Old password incorrect |
 
 ---
 
-## 3. Dedicated Verification Tests
+## 3. Security Implementation
 
-The unit and integration checks verifying the authentication features are housed in:
-- **Validators Unit Tests:** [utils.test.js](file:///c:/Users/athar/Desktop/Roxiler/backend/src/tests/utils.test.js) (Runs assertions on email formats and password requirements).
-- **Authentication API Tests:** [auth.test.js](file:///c:/Users/athar/Desktop/Roxiler/backend/src/tests/auth.test.js) (Fires E2E requests on port 5001 checking validation failures, successful login, token issuance, and password changes).
+### 3.1 Password Hashing
+- Library: `bcryptjs`
+- Salt rounds: 10
+- Passwords are **never stored in plaintext** — only bcrypt hashes
+
+### 3.2 JWT Token
+- Library: `jsonwebtoken`
+- Payload: `{ id: user.id, role: user.role }`
+- Secret: Read from `process.env.JWT_SECRET`
+- Expiry: 24 hours
+- Transmitted via: `Authorization: Bearer <token>` header
+
+### 3.3 Middleware Chain
+```
+verifyToken(req, res, next)
+  → Extracts token from Authorization header
+  → Verifies with jwt.verify()
+  → Attaches decoded payload to req.user
+  → Calls next() or returns 401
+
+restrictTo(...roles)
+  → Checks if req.user.role is in the allowed roles array
+  → Returns 403 Forbidden if not authorized
+```
+
+---
+
+## 4. Frontend Integration
+
+### 4.1 Login Flow
+1. User submits email + password on `/login`
+2. `loginUser()` calls `POST /api/auth/login`
+3. On success, `AuthContext.login(token, user)` saves to localStorage + state
+4. Router redirects based on role: `SYSTEM_ADMIN` → `/admin`, `STORE_OWNER` → `/owner`, `NORMAL_USER` → `/`
+
+### 4.2 Signup Flow
+1. User fills form on `/signup` — client-side validation runs first
+2. If valid, `signupUser()` calls `POST /api/auth/signup`
+3. On success, toast notification shown, redirect to `/login`
+
+### 4.3 Change Password Flow
+1. User clicks "Change Password" in Navbar → modal opens
+2. Client-side validation on new password
+3. `changePassword()` calls `POST /api/auth/change-password`
+4. Token attached automatically by Axios interceptor
+
+---
+
+## 5. Test Coverage
+
+### Backend Tests (`backend/src/tests/auth.test.js`)
+- Signup fails with name < 20 characters
+- Signup fails with missing special character in password
+- Signup fails with password < 8 characters
+- Signup succeeds with valid data
+- Signup fails with duplicate email
+- Login fails with wrong credentials
+- Login succeeds with correct credentials
+- Password change fails with invalid new password
+- Password change succeeds
+- Login succeeds with new password
+
+### Frontend Tests (`frontend/src/tests/Login.test.jsx`, `Signup.test.jsx`)
+- Login form renders email/password fields and submit button
+- Login calls API with form values
+- Signup validates name length, password rules before API call
+- Signup calls API on valid submission
+- Signup shows navigation link to login

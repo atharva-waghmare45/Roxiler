@@ -1,6 +1,6 @@
-# Store Rating Web Application
+rem# Store Rating Web Application
 
-A monorepo-based Store Rating Web Application built using React (Vite/Vanilla CSS) on the frontend and Express.js with a direct PostgreSQL connection pool on the backend.
+A monorepo-based Store Rating Web Application built using React (Vite + Tailwind CSS v4) on the frontend and Express.js with a direct PostgreSQL connection pool on the backend.
 
 ---
 
@@ -8,10 +8,13 @@ A monorepo-based Store Rating Web Application built using React (Vite/Vanilla CS
 
 ```text
 roxiler-rating-app/
-├── frontend/                     # React JS Client (Vite, Vanilla CSS)
+├── frontend/                     # React JS Client (Vite, Tailwind CSS v4)
 │   ├── src/
-│   │   ├── components/           # Reusable UI widgets
-│   │   ├── pages/                # Dashboards and Forms
+│   │   ├── api/                  # Axios API client modules (auth, admin, user, owner)
+│   │   ├── components/           # Reusable UI widgets (Navbar, ProtectedRoute)
+│   │   ├── context/              # AuthContext provider
+│   │   ├── pages/                # Login, Signup, Admin, Stores, Owner
+│   │   ├── tests/                # Vitest + React Testing Library component tests
 │   │   └── utils/                # Frontend helpers
 ├── backend/                      # Node.js Express.js server
 │   ├── src/
@@ -20,6 +23,7 @@ roxiler-rating-app/
 │   │   ├── controllers/          # Business logic handlers
 │   │   ├── middlewares/          # JWT and role authorization checks
 │   │   ├── routes/               # API endpoint definitions
+│   │   ├── services/             # Data access layer
 │   │   ├── tests/                # Dedicated test suites
 │   │   └── utils/                # Reusable validator utilities
 ├── docs/                         # Documentation guides
@@ -28,6 +32,7 @@ roxiler-rating-app/
 │   ├── admin_guide.md            # Admin panel guide
 │   └── owner_guide.md            # Owner dashboard guide
 ├── backend_tickets.md            # Backend implementation tickets checklist
+├── frontend_tickets.md           # Frontend implementation tickets checklist
 └── package.json                  # Workspaces configuration
 ```
 
@@ -51,9 +56,32 @@ JWT_SECRET="your-jwt-secret-key"
 ### 3. Install Workspace Dependencies
 Install dependencies for both frontend and backend workspaces from the root folder:
 ```bash
-# Windows PowerShell
-npm.cmd install
+npm install
 ```
+
+---
+
+## 🚀 Running the Application
+
+### Start Backend Server
+```bash
+cd backend
+npm run dev
+# Runs on http://localhost:5000
+# Swagger docs at http://localhost:5000/api-docs
+```
+
+### Start Frontend Dev Server
+```bash
+cd frontend
+npm run dev
+# Runs on http://localhost:5173
+```
+
+### Default Admin Credentials
+After running database migrations, a system administrator is seeded:
+- **Email:** `admin@roxiler.com`
+- **Password:** `AdminPassword123!`
 
 ---
 
@@ -61,50 +89,47 @@ npm.cmd install
 
 Database tables are initialized using raw SQL files executed in alphabetical order. To reset/run migrations:
 ```bash
-# Run migrations from root
-npm.cmd run dev:backend --prefix backend node src/config/db_init.js
-
-# Or directly in backend folder
 cd backend
 node src/config/db_init.js
 ```
-*Note: Running migrations automatically drops existing tables and seeds a default system administrator (`admin@roxiler.com` / `AdminPassword123!`).*
+*Note: Running migrations automatically drops existing tables and seeds a default system administrator.*
 
 ---
 
 ## 🧪 Running Tests
 
-The application separates tests into individual functionality modules. To execute:
+### Frontend Component Tests (Vitest)
+```bash
+cd frontend
+npm run test
+```
+Runs 6 test files covering AuthContext, Login, Signup, Admin, Stores, and Owner components.
 
-### Running Utility Unit Tests
+### Backend Integration Tests
 ```bash
 cd backend
-node src/tests/utils.test.js
+node src/tests/utils.test.js     # Utility unit tests
+node src/tests/auth.test.js      # Auth API tests
+node src/tests/admin.test.js     # Admin panel API tests
+node src/tests/owner.test.js     # Owner panel API tests
+node src/tests/api.test.js       # Full integration test suite
 ```
 
-### Running Authentication API Tests
-```bash
-cd backend
-node src/tests/auth.test.js
-```
+---
 
-### Running Admin panel API Tests
-```bash
-cd backend
-node src/tests/admin.test.js
-```
+## 🎨 Tech Stack
 
-### Running Owner panel API Tests
-```bash
-cd backend
-node src/tests/owner.test.js
-```
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React 19, Vite, Tailwind CSS v4, Axios, React Router v7, React Toastify, Lucide Icons |
+| Backend | Node.js, Express.js, PostgreSQL (pg), JWT (jsonwebtoken), bcrypt, Swagger UI |
+| Testing | Vitest + React Testing Library (frontend), Custom test runner (backend) |
 
 ---
 
 ## 📖 API & Flow Documentation
 Refer to the following guides for detailed implementation info:
-- **Swagger spec:** [swagger.yaml](file:///c:/Users/athar/Desktop/Roxiler/docs/swagger.yaml)
-- **User Authentication:** [auth_guide.md](file:///c:/Users/athar/Desktop/Roxiler/docs/auth_guide.md)
-- **Administrator Panel:** [admin_guide.md](file:///c:/Users/athar/Desktop/Roxiler/docs/admin_guide.md)
-- **Store Owner Dashboard:** [owner_guide.md](file:///c:/Users/athar/Desktop/Roxiler/docs/owner_guide.md)
+- **Swagger spec:** `docs/swagger.yaml`
+- **User Authentication:** `docs/auth_guide.md`
+- **Administrator Panel:** `docs/admin_guide.md`
+- **Store Owner Dashboard:** `docs/owner_guide.md`

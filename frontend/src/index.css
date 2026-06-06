@@ -4,9 +4,70 @@
 
 @theme {
   --font-sans: 'Outfit', system-ui, -apple-system, sans-serif;
+  --animate-fade-in: fade-in 0.35s ease-out;
+  --animate-slide-up: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-scale-in: scale-in 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 body {
   @apply bg-slate-50 text-slate-800 antialiased selection:bg-purple-100 selection:text-purple-900;
   font-family: var(--font-sans);
+}
+
+/* ── Global entrance animations ─────────────────────────── */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* ── Smooth scrolling ───────────────────────────────────── */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ── Input focus glow ring ──────────────────────────────── */
+input:focus,
+textarea:focus,
+select:focus {
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12);
+}
+
+/* ── Table row hover lift ───────────────────────────────── */
+tbody tr {
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+/* ── Card hover subtle lift ─────────────────────────────── */
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+/* ── Scrollbar styling ──────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
