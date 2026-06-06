@@ -1,37 +1,18 @@
-const { query } = require('../db');
+const ownerService = require('../services/owner.service');
 
 // GET /api/owner/dashboard
 const getDashboard = async (req, res) => {
   try {
     const ownerId = req.user.id; // From verifyToken middleware
 
-    // Query stores owned by the owner, including overall average rating and rating count
-    const storesQuery = `
-      SELECT s.id, s.name, s.email, s.address,
-             COALESCE(AVG(r.value), 0.0) as average_rating,
-             COUNT(r.id) as rating_count
-      FROM stores s
-      LEFT JOIN ratings r ON s.id = r.store_id
-      WHERE s.owner_id = $1
-      GROUP BY s.id
-      ORDER BY s.name ASC
-    `;
-    const storesResult = await query(storesQuery, [ownerId]);
+    // Query stores metrics via Service
+    const storesRows = await ownerService.getOwnerStores(ownerId);
 
-    // Query list of users who rated their stores
-    const reviewersQuery = `
-      SELECT u.name as user_name, u.email as user_email, u.address as user_address,
-             r.value as rating_value, r.created_at as rated_at, s.name as store_name
-      FROM ratings r
-      JOIN users u ON r.user_id = u.id
-      JOIN stores s ON r.store_id = s.id
-      WHERE s.owner_id = $1
-      ORDER BY r.created_at DESC
-    `;
-    const reviewersResult = await query(reviewersQuery, [ownerId]);
+    // Query reviewers list via Service
+    const reviewersRows = await ownerService.getStoreReviewers(ownerId);
 
     // Format output
-    const stores = storesResult.rows.map(store => ({
+    const stores = storesRows.map(store => ({
       id: store.id,
       name: store.name,
       email: store.email,
@@ -40,7 +21,7 @@ const getDashboard = async (req, res) => {
       totalRatings: parseInt(store.rating_count, 10)
     }));
 
-    const reviews = reviewersResult.rows.map(review => ({
+    const reviews = reviewersRows.map(review => ({
       userName: review.user_name,
       userEmail: review.user_email,
       userAddress: review.user_address,

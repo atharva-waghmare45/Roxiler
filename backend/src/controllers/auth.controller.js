@@ -1,9 +1,9 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { query } = require('../db');
 require('dotenv').config();
 
 const { validateEmail, validatePassword } = require('../utils/validators');
+const authService = require('../services/auth.service');
 
 // POST /api/auth/signup (For NORMAL_USER registration)
 const signup = async (req, res) => {
@@ -24,20 +24,17 @@ const signup = async (req, res) => {
       return res.status(400).json({ message: 'Password must be 8-16 characters and contain at least one uppercase letter and one special character.' });
     }
 
-    // Check if email already exists
-    const emailCheck = await query('SELECT id FROM users WHERE email = $1', [email.toLowerCase()]);
-    if (emailCheck.rows.length > 0) {
+    // Check if email already exists via Service
+    const existingUser = await authService.findUserByEmail(email);
+    if (existingUser) {
       return res.status(400).json({ message: 'Email already exists.' });
     }
 
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Insert user (Force role to NORMAL_USER for signup)
-    await query(
-      'INSERT INTO users (name, email, password, address, role) VALUES ($1, $2, $3, $4, $5)',
-      [name.trim(), email.toLowerCase(), hashedPassword, address.trim(), 'NORMAL_USER']
-    );
+    // Create user via Service
+    await authService.createUser(name, email, hashedPassword, address, 'NORMAL_USER');
 
     res.status(201).json({ message: 'Registration successful! You can now log in.' });
   } catch (error) {
@@ -55,13 +52,11 @@ const login = async (req, res) => {
       return res.status(400).json({ message: 'Email and password are required.' });
     }
 
-    // Retrieve user
-    const result = await query('SELECT * FROM users WHERE email = $1', [email.toLowerCase()]);
-    if (result.rows.length === 0) {
+    // Retrieve user via Service
+    const user = await authService.findUserByEmail(email);
+    if (!user) {
       return res.status(401).json({ message: 'Invalid email or password.' });
     }
-
-    const user = result.rows[0];
 
     // Check password
     const isMatch = await bcrypt.compare(password, user.password);
@@ -106,13 +101,13 @@ const changePassword = async (req, res) => {
       return res.status(400).json({ message: 'New password must be 8-16 characters and contain at least one uppercase letter and one special character.' });
     }
 
-    // Retrieve user
-    const result = await query('SELECT password FROM users WHERE id = $1', [userId]);
-    if (result.rows.length === 0) {
+    // Retrieve user via Service
+    const user = await authService.findUserById(userId);
+    if (!user) {
       return res.status(404).json({ message: 'User not found.' });
     }
 
-    const currentHashedPassword = result.rows[0].password;
+    const currentHashedPassword = user.password;
 
     // Verify current password
     const isMatch = await bcrypt.compare(oldPassword, currentHashedPassword);
@@ -120,12 +115,9 @@ const changePassword = async (req, res) => {
       return res.status(400).json({ message: 'Incorrect current password.' });
     }
 
-    // Hash new password and update
+    // Hash new password and update via Service
     const hashedNewPassword = await bcrypt.hash(newPassword, 10);
-    await query(
-      'UPDATE users SET password = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
-      [hashedNewPassword, userId]
-    );
+    await authService.updatePassword(userId, hashedNewPassword);
 
     res.json({ message: 'Password updated successfully!' });
   } catch (error) {

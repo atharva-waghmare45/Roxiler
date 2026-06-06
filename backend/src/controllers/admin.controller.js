@@ -1,8 +1,8 @@
 const bcrypt = require('bcryptjs');
-const { query } = require('../db');
 const { validateEmail, validatePassword } = require('../utils/validators');
+const adminService = require('../services/admin.service');
+const authService = require('../services/auth.service');
 
-// Helper to check valid roles
 const ALLOWED_ROLES = ['SYSTEM_ADMIN', 'NORMAL_USER', 'STORE_OWNER'];
 
 // POST /api/admin/users
@@ -27,24 +27,27 @@ const createUser = async (req, res) => {
       return res.status(400).json({ message: `Invalid role. Must be one of: ${ALLOWED_ROLES.join(', ')}` });
     }
 
-    // Check if email already exists
-    const emailCheck = await query('SELECT id FROM users WHERE email = $1', [email.toLowerCase()]);
-    if (emailCheck.rows.length > 0) {
+    // Check if email already exists via Auth Service
+    const existingUser = await authService.findUserByEmail(email);
+    if (existingUser) {
       return res.status(400).json({ message: 'Email already exists.' });
     }
 
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Insert user
-    const result = await query(
-      'INSERT INTO users (name, email, password, address, role) VALUES ($1, $2, $3, $4, $5) RETURNING id, name, email, address, role',
-      [name.trim(), email.toLowerCase(), hashedPassword, address.trim(), role]
-    );
+    // Create user via Auth Service
+    const newUser = await authService.createUser(name, email, hashedPassword, address, role);
 
     res.status(201).json({
       message: 'User created successfully.',
-      user: result.rows[0]
+      user: {
+        id: newUser.id,
+        name: newUser.name,
+        email: newUser.email,
+        address: newUser.address,
+        role: newUser.role
+      }
     });
   } catch (error) {
     console.error('Admin createUser error:', error);
@@ -70,24 +73,21 @@ const createStore = async (req, res) => {
       return res.status(400).json({ message: 'Owner ID is required.' });
     }
 
-    // Verify owner exists and is a STORE_OWNER
-    const ownerCheck = await query('SELECT role FROM users WHERE id = $1', [ownerId]);
-    if (ownerCheck.rows.length === 0) {
+    // Verify owner exists and is a STORE_OWNER via Admin Service
+    const owner = await adminService.verifyOwner(ownerId);
+    if (!owner) {
       return res.status(400).json({ message: 'Assigned owner does not exist.' });
     }
-    if (ownerCheck.rows[0].role !== 'STORE_OWNER') {
+    if (owner.role !== 'STORE_OWNER') {
       return res.status(400).json({ message: 'Assigned owner must have the STORE_OWNER role.' });
     }
 
-    // Insert store
-    const result = await query(
-      'INSERT INTO stores (name, email, address, owner_id) VALUES ($1, $2, $3, $4) RETURNING *',
-      [name.trim(), email.toLowerCase(), address.trim(), ownerId]
-    );
+    // Insert store via Admin Service
+    const store = await adminService.createStore(name, email, address, ownerId);
 
     res.status(201).json({
       message: 'Store registered successfully.',
-      store: result.rows[0]
+      store
     });
   } catch (error) {
     console.error('Admin createStore error:', error);
@@ -95,18 +95,11 @@ const createStore = async (req, res) => {
   }
 };
 
-// GET /api/admin/dashboard (Counts)
+// GET /api/admin/dashboard
 const getDashboardStats = async (req, res) => {
   try {
-    const userCount = await query('SELECT COUNT(*) FROM users');
-    const storeCount = await query('SELECT COUNT(*) FROM stores');
-    const ratingCount = await query('SELECT COUNT(*) FROM ratings');
-
-    res.json({
-      totalUsers: parseInt(userCount.rows[0].count, 10),
-      totalStores: parseInt(storeCount.rows[0].count, 10),
-      totalRatings: parseInt(ratingCount.rows[0].count, 10)
-    });
+    const stats = await adminService.getStats();
+    res.json(stats);
   } catch (error) {
     console.error('Admin dashboard stats error:', error);
     res.status(500).json({ message: 'Internal server error.' });
@@ -118,45 +111,10 @@ const getUsers = async (req, res) => {
   try {
     const { search, role, sortBy, sortOrder } = req.query;
 
-    // Build filter query
-    let whereClauses = [];
-    let queryParams = [];
+    const rows = await adminService.listUsers(search, role, sortBy, sortOrder);
 
-    if (search) {
-      queryParams.push(`%${search}%`);
-      const searchParamIndex = queryParams.length;
-      whereClauses.push(`(u.name ILIKE $${searchParamIndex} OR u.email ILIKE $${searchParamIndex} OR u.address ILIKE $${searchParamIndex})`);
-    }
-
-    if (role) {
-      queryParams.push(role);
-      const roleParamIndex = queryParams.length;
-      whereClauses.push(`u.role = $${roleParamIndex}`);
-    }
-
-    const whereSql = whereClauses.length > 0 ? `WHERE ${whereClauses.join(' AND ')}` : '';
-
-    // Build sorting (restrict parameters to prevent SQL injection)
-    const allowedSortFields = ['name', 'email', 'address', 'role', 'created_at'];
-    const activeSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'name';
-    const activeSortOrder = sortOrder && sortOrder.toLowerCase() === 'desc' ? 'DESC' : 'ASC';
-
-    // Query retrieving users. If store owner, calculate average rating of all owned stores.
-    const usersQuery = `
-      SELECT u.id, u.name, u.email, u.address, u.role, u.created_at,
-             (SELECT COALESCE(AVG(r.value), 0.0)
-              FROM stores s
-              LEFT JOIN ratings r ON s.id = r.store_id
-              WHERE s.owner_id = u.id) as average_rating
-      FROM users u
-      ${whereSql}
-      ORDER BY u.${activeSortBy} ${activeSortOrder}
-    `;
-
-    const result = await query(usersQuery, queryParams);
-
-    // Format output: Only display rating if the user is a STORE_OWNER
-    const users = result.rows.map(user => {
+    // Format output
+    const users = rows.map(user => {
       const formatted = {
         id: user.id,
         name: user.name,
@@ -183,35 +141,9 @@ const getStores = async (req, res) => {
   try {
     const { search, sortBy, sortOrder } = req.query;
 
-    let whereClauses = [];
-    let queryParams = [];
+    const rows = await adminService.listStores(search, sortBy, sortOrder);
 
-    if (search) {
-      queryParams.push(`%${search}%`);
-      const searchParamIndex = queryParams.length;
-      whereClauses.push(`(s.name ILIKE $${searchParamIndex} OR s.address ILIKE $${searchParamIndex})`);
-    }
-
-    const whereSql = whereClauses.length > 0 ? `WHERE ${whereClauses.join(' AND ')}` : '';
-
-    // Allowed sort fields (average_rating is aliased and calculated)
-    const allowedSortFields = ['name', 'email', 'address', 'average_rating'];
-    const activeSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'name';
-    const activeSortOrder = sortOrder && sortOrder.toLowerCase() === 'desc' ? 'DESC' : 'ASC';
-
-    const storesQuery = `
-      SELECT s.id, s.name, s.email, s.address, s.owner_id,
-             COALESCE(AVG(r.value), 0.0) as average_rating
-      FROM stores s
-      LEFT JOIN ratings r ON s.id = r.store_id
-      ${whereSql}
-      GROUP BY s.id
-      ORDER BY ${activeSortBy === 'average_rating' ? 'average_rating' : `s.${activeSortBy}`} ${activeSortOrder}
-    `;
-
-    const result = await query(storesQuery, queryParams);
-
-    const stores = result.rows.map(store => ({
+    const stores = rows.map(store => ({
       id: store.id,
       name: store.name,
       email: store.email,
