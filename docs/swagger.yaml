@@ -6,9 +6,22 @@ info:
 servers:
   - url: http://localhost:5000/api
     description: Local Development Server
+tags:
+  - name: Authentication
+    description: User registration, login, and password management.
+  - name: System Admin
+    description: Administration routes for managing users, stores, and statistics.
+  - name: Normal User
+    description: Routes for customer/normal user actions (viewing stores, rating stores).
+  - name: Store Owner
+    description: Dashboard and details for store owners.
+  - name: System Health
+    description: Health check endpoints.
 paths:
   /auth/signup:
     post:
+      tags:
+        - Authentication
       summary: Register a new normal user
       description: Allows guest users to register as a NORMAL_USER.
       requestBody:
@@ -50,6 +63,8 @@ paths:
 
   /auth/login:
     post:
+      tags:
+        - Authentication
       summary: Authenticate user & get token
       description: Returns a JWT for session management.
       requestBody:
@@ -97,6 +112,8 @@ paths:
 
   /auth/change-password:
     post:
+      tags:
+        - Authentication
       summary: Change user password
       description: Allows logged in users to update their password.
       security:
@@ -127,6 +144,8 @@ paths:
 
   /admin/dashboard:
     get:
+      tags:
+        - System Admin
       summary: Get system dashboard statistics
       description: Returns count of users, stores, and ratings.
       security:
@@ -152,6 +171,8 @@ paths:
 
   /admin/users:
     post:
+      tags:
+        - System Admin
       summary: Create a new user (Admin/Owner/Normal)
       security:
         - BearerAuth: []
@@ -191,6 +212,8 @@ paths:
           description: Validation error
 
     get:
+      tags:
+        - System Admin
       summary: List all users
       description: Returns filtered and sorted list of users. If STORE_OWNER, includes average rating.
       security:
@@ -222,6 +245,8 @@ paths:
 
   /admin/stores:
     post:
+      tags:
+        - System Admin
       summary: Create a new store
       security:
         - BearerAuth: []
@@ -256,6 +281,8 @@ paths:
           description: Validation error or owner constraints not met
 
     get:
+      tags:
+        - System Admin
       summary: List all stores
       description: Returns stores with overall ratings.
       security:
@@ -263,7 +290,7 @@ paths:
       parameters:
         - name: search
           in: query
-          description: Search by name or address
+          description: Search by name, address, or email
           schema:
             type: string
         - name: sortBy
@@ -282,6 +309,8 @@ paths:
 
   /user/stores:
     get:
+      tags:
+        - Normal User
       summary: List all stores for normal users
       description: Returns stores with their aggregated rating and the active user's rating.
       security:
@@ -308,6 +337,8 @@ paths:
 
   /user/ratings:
     post:
+      tags:
+        - Normal User
       summary: Submit or update store rating
       description: Submits a rating (1 to 5) for a store. Performs an upsert if already rated.
       security:
@@ -340,10 +371,35 @@ paths:
 
   /owner/dashboard:
     get:
+      tags:
+        - Store Owner
       summary: Get store owner dashboard metrics
       description: Returns list of stores owned by this owner with their average ratings and the reviewer list.
       security:
         - BearerAuth: []
+      parameters:
+        - name: storesSortBy
+          in: query
+          description: Field to sort stores table by
+          schema:
+            type: string
+            enum: [name, email, address, averageRating, totalRatings]
+        - name: storesSortOrder
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+        - name: reviewsSortBy
+          in: query
+          description: Field to sort reviews table by
+          schema:
+            type: string
+            enum: [userName, userEmail, userAddress, ratingValue, ratedAt, storeName]
+        - name: reviewsSortOrder
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
       responses:
         "200":
           description: Dashboard metrics retrieved successfully
@@ -390,6 +446,27 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden (Store Owner role required)
+
+  /health:
+    get:
+      tags:
+        - System Health
+      summary: Health check endpoint
+      description: Returns the status and activity message of the Store Rating API.
+      responses:
+        "200":
+          description: API is active and running
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ok"
+                  message:
+                    type: string
+                    example: "Store Rating API is active"
 
 components:
   securitySchemes:

@@ -4,12 +4,13 @@ const ownerService = require('../services/owner.service');
 const getDashboard = async (req, res) => {
   try {
     const ownerId = req.user.id; // From verifyToken middleware
+    const { storesSortBy, storesSortOrder, reviewsSortBy, reviewsSortOrder } = req.query;
 
     // Query stores metrics via Service
-    const storesRows = await ownerService.getOwnerStores(ownerId);
+    const storesRows = await ownerService.getOwnerStores(ownerId, storesSortBy, storesSortOrder);
 
     // Query reviewers list via Service
-    const reviewersRows = await ownerService.getStoreReviewers(ownerId);
+    const reviewersRows = await ownerService.getStoreReviewers(ownerId, reviewsSortBy, reviewsSortOrder);
 
     // Format output
     const stores = storesRows.map(store => ({

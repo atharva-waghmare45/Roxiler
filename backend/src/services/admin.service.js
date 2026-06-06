@@ -101,7 +101,7 @@ const listStores = async (search, sortBy, sortOrder) => {
   if (search) {
     queryParams.push(`%${search}%`);
     const searchParamIndex = queryParams.length;
-    whereClauses.push(`(s.name ILIKE $${searchParamIndex} OR s.address ILIKE $${searchParamIndex})`);
+    whereClauses.push(`(s.name ILIKE $${searchParamIndex} OR s.address ILIKE $${searchParamIndex} OR s.email ILIKE $${searchParamIndex})`);
   }
 
   const whereSql = whereClauses.length > 0 ? `WHERE ${whereClauses.join(' AND ')}` : '';

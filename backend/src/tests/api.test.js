@@ -254,7 +254,7 @@ const runTests = async () => {
       name: 'Store Owner Account User', // 25 chars
       email: testOwnerEmail,
       address: 'Owner Address 123, Market Street, Bangalore',
-      password: 'OwnerPassword123!',
+      password: 'OwnerPass123!',
       role: 'STORE_OWNER'
     }, adminToken);
     assert(

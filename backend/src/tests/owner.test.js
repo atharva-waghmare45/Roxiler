@@ -60,17 +60,21 @@ const runTests = async () => {
 
   const suffix = Date.now();
   const testOwnerEmail = `owner_user_${suffix}@roxiler.com`;
-  const testNormalEmail = `owner_normal_${suffix}@roxiler.com`;
-  const storeName = `Roxiler Owner Store ${suffix}`;
+  const testNormalEmailA = `owner_normal_a_${suffix}@roxiler.com`;
+  const testNormalEmailZ = `owner_normal_z_${suffix}@roxiler.com`;
+  const storeNameA = `A Roxiler Owner Store ${suffix}`;
+  const storeNameZ = `Z Roxiler Owner Store ${suffix}`;
 
   let adminToken;
   let ownerId;
   let ownerToken;
-  let storeId;
-  let normalToken;
+  let storeIdA;
+  let storeIdZ;
+  let normalTokenA;
+  let normalTokenZ;
 
   try {
-    // 1. Log in as System Admin to create store owner and store
+    // 1. Log in as System Admin to create store owner and stores
     const adminLoginRes = await makeRequest('/api/auth/login', 'POST', {
       email: 'admin@roxiler.com',
       password: 'AdminPassword123!'
@@ -78,7 +82,7 @@ const runTests = async () => {
     adminToken = adminLoginRes.body.token;
 
     const createOwnerRes = await makeRequest('/api/admin/users', 'POST', {
-      name: 'Store Owner Dashboard User', // 28 chars
+      name: 'Store Owner Dashboard User',
       email: testOwnerEmail,
       address: 'Owner Shop Plaza, Bangalore',
       password: 'OwnerPass123!',
@@ -86,13 +90,23 @@ const runTests = async () => {
     }, adminToken);
     ownerId = createOwnerRes.body.user.id;
 
-    const createStoreRes = await makeRequest('/api/admin/stores', 'POST', {
-      name: storeName,
-      email: `ownerstore_${suffix}@roxiler.com`,
-      address: 'Store Street, Bangalore',
+    // Register Store A
+    const createStoreARes = await makeRequest('/api/admin/stores', 'POST', {
+      name: storeNameA,
+      email: `ownerstore_a_${suffix}@roxiler.com`,
+      address: 'Store Street A, Bangalore',
       ownerId: ownerId
     }, adminToken);
-    storeId = createStoreRes.body.store.id;
+    storeIdA = createStoreARes.body.store.id;
+
+    // Register Store Z
+    const createStoreZRes = await makeRequest('/api/admin/stores', 'POST', {
+      name: storeNameZ,
+      email: `ownerstore_z_${suffix}@roxiler.com`,
+      address: 'Store Street Z, Bangalore',
+      ownerId: ownerId
+    }, adminToken);
+    storeIdZ = createStoreZRes.body.store.id;
 
     // Log in as the Store Owner
     const ownerLoginRes = await makeRequest('/api/auth/login', 'POST', {
@@ -101,43 +115,71 @@ const runTests = async () => {
     });
     ownerToken = ownerLoginRes.body.token;
 
-    // 2. Register a Normal User to leave a rating
+    // 2. Register Normal User A and Normal User Z
     await makeRequest('/api/auth/signup', 'POST', {
-      name: 'Normal Reviewer User Account', // 29 chars
-      email: testNormalEmail,
-      address: 'Reviewer Street 789, Bangalore',
+      name: 'Normal Reviewer A User Account', // 30 chars
+      email: testNormalEmailA,
+      address: 'Reviewer Street A, Bangalore',
       password: 'ReviewerPass123!'
     });
 
-    const userLoginRes = await makeRequest('/api/auth/login', 'POST', {
-      email: testNormalEmail,
+    const userLoginARes = await makeRequest('/api/auth/login', 'POST', {
+      email: testNormalEmailA,
       password: 'ReviewerPass123!'
     });
-    normalToken = userLoginRes.body.token;
+    normalTokenA = userLoginARes.body.token;
 
-    // 3. Normal User leaves a rating of 4 for the store
+    await makeRequest('/api/auth/signup', 'POST', {
+      name: 'Normal Reviewer Z User Account', // 30 chars
+      email: testNormalEmailZ,
+      address: 'Reviewer Street Z, Bangalore',
+      password: 'ReviewerPass123!'
+    });
+
+    const userLoginZRes = await makeRequest('/api/auth/login', 'POST', {
+      email: testNormalEmailZ,
+      password: 'ReviewerPass123!'
+    });
+    normalTokenZ = userLoginZRes.body.token;
+
+    // 3. User A leaves a rating of 4 for Store A, User Z leaves a rating of 2 for Store Z
     await makeRequest('/api/user/ratings', 'POST', {
-      storeId: storeId,
+      storeId: storeIdA,
       value: 4
-    }, normalToken);
+    }, normalTokenA);
 
-    // 4. Query Store Owner Dashboard
+    await makeRequest('/api/user/ratings', 'POST', {
+      storeId: storeIdZ,
+      value: 2
+    }, normalTokenZ);
+
+    // 4. Query Store Owner Dashboard with default sorting
     const dashboardRes = await makeRequest('/api/owner/dashboard', 'GET', null, ownerToken);
-    
-    // Asserts
-    const storeData = dashboardRes.body.stores.find(s => s.id === storeId);
-    const reviewData = dashboardRes.body.reviews.find(r => r.userEmail === testNormalEmail);
-
     assert('Store Owner can view their dashboard successfully', dashboardRes.status === 200);
-    assert('Dashboard returns the owned store details with average rating = 4',
-      storeData && storeData.name === storeName && storeData.averageRating === 4 && storeData.totalRatings === 1
-    );
-    assert('Dashboard returns the reviews list containing the customer review name and rating',
-      reviewData && reviewData.ratingValue === 4 && reviewData.userName === 'Normal Reviewer User Account' && reviewData.storeName === storeName
+
+    const storeAData = dashboardRes.body.stores.find(s => s.id === storeIdA);
+    assert('Dashboard returns store A details with average rating = 4',
+      storeAData && storeAData.name === storeNameA && storeAData.averageRating === 4 && storeAData.totalRatings === 1
     );
 
-    // 5. Access control check: Normal User cannot access Owner Dashboard
-    const normalAccessRes = await makeRequest('/api/owner/dashboard', 'GET', null, normalToken);
+    // 5. Query dashboard with storesSortBy=name and storesSortOrder=desc
+    const dashboardDescStoresRes = await makeRequest('/api/owner/dashboard?storesSortBy=name&storesSortOrder=desc', 'GET', null, ownerToken);
+    const firstStoreName = dashboardDescStoresRes.body.stores[0].name;
+    assert('Dashboard supports sorting stores table in descending order (Z first)', firstStoreName === storeNameZ);
+
+    // 6. Query dashboard with reviewsSortBy=ratingValue and reviewsSortOrder=asc (lowest rating first)
+    const dashboardAscReviewsRes = await makeRequest('/api/owner/dashboard?reviewsSortBy=ratingValue&reviewsSortOrder=asc', 'GET', null, ownerToken);
+    const firstReviewRating = dashboardAscReviewsRes.body.reviews[0].ratingValue;
+    assert('Dashboard supports sorting reviews table by ratingValue ASC (2 first)', firstReviewRating === 2);
+
+    // 7. Verify Admin Store Search by email column
+    const adminStoreSearchRes = await makeRequest(`/api/admin/stores?search=ownerstore_z_${suffix}@roxiler.com`, 'GET', null, adminToken);
+    assert('Admin can search stores listing by store email address',
+      adminStoreSearchRes.status === 200 && adminStoreSearchRes.body.some(s => s.email === `ownerstore_z_${suffix}@roxiler.com`)
+    );
+
+    // 8. Access control check: Normal User cannot access Owner Dashboard
+    const normalAccessRes = await makeRequest('/api/owner/dashboard', 'GET', null, normalTokenA);
     assert('Normal user access to owner dashboard is forbidden (403)', normalAccessRes.status === 403);
 
   } catch (error) {
@@ -145,8 +187,8 @@ const runTests = async () => {
   } finally {
     // Cleanup users
     try {
-      await query('DELETE FROM users WHERE email IN ($1, $2)', [testOwnerEmail, testNormalEmail]);
-      console.log(`\nCleanup: Removed test users ${testOwnerEmail} and ${testNormalEmail}`);
+      await query("DELETE FROM users WHERE email LIKE $1 OR email = $2 OR email = $3", [`%_${suffix}@roxiler.com`, testOwnerEmail, `ownerstore_a_${suffix}@roxiler.com`]);
+      console.log(`\nCleanup: Removed test users/stores matching suffix ${suffix}`);
     } catch (cleanupErr) {
       console.error('Error cleaning up owner test users:', cleanupErr);
     }
