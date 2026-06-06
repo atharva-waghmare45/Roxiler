@@ -17,7 +17,13 @@ const port = process.env.PORT || 5000;
 // Load swagger DDL spec
 const swaggerDocument = YAML.load(path.join(__dirname, '../../docs/swagger.yaml'));
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'https://roxiler-3m7g.onrender.com'
+  ],
+  credentials: true
+}));
 app.use(express.json());
 
 // Mount Swagger UI
