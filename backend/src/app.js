@@ -20,6 +20,7 @@ const swaggerDocument = YAML.load(path.join(__dirname, '../../docs/swagger.yaml'
 app.use(cors({
   origin: [
     'http://localhost:5173',
+    'https://roxiler-ui.onrender.com',
     'https://roxiler-3m7g.onrender.com'
   ],
   credentials: true
