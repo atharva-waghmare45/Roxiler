@@ -1,0 +1,288 @@
+openapi: 3.0.0
+info:
+  title: Store Rating Web Application API
+  description: RESTful API for Store Rating Platform with Role-Based Access Control (RBAC).
+  version: 1.0.0
+servers:
+  - url: http://localhost:5000/api
+    description: Local Development Server
+paths:
+  /auth/signup:
+    post:
+      summary: Register a new normal user
+      description: Allows guest users to register as a NORMAL_USER.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+                - address
+                - password
+              properties:
+                name:
+                  type: string
+                  minLength: 20
+                  maxLength: 60
+                  example: "Johnathan Doe Smithsonians"
+                email:
+                  type: string
+                  format: email
+                  example: "john.doe@example.com"
+                address:
+                  type: string
+                  maxLength: 400
+                  example: "123 Main Street, Bangalore"
+                password:
+                  type: string
+                  minLength: 8
+                  maxLength: 16
+                  description: Must contain 1 uppercase letter and 1 special character.
+                  example: "SecurePassword1!"
+      responses:
+        "201":
+          description: Registration successful
+        "400":
+          description: Validation error or Email already exists
+
+  /auth/login:
+    post:
+      summary: Authenticate user & get token
+      description: Returns a JWT for session management.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "admin@roxiler.com"
+                password:
+                  type: string
+                  example: "AdminPassword123!"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  token:
+                    type: string
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      name:
+                        type: string
+                      email:
+                        type: string
+                      role:
+                        type: string
+        "401":
+          description: Invalid email or password
+
+  /auth/change-password:
+    post:
+      summary: Change user password
+      description: Allows logged in users to update their password.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - oldPassword
+                - newPassword
+              properties:
+                oldPassword:
+                  type: string
+                  example: "OldPassword123!"
+                newPassword:
+                  type: string
+                  example: "NewPassword123!"
+      responses:
+        "200":
+          description: Password updated successfully
+        "400":
+          description: Validation error or incorrect current password
+        "401":
+          description: Unauthorized (Token invalid/expired)
+
+  /admin/dashboard:
+    get:
+      summary: Get system dashboard statistics
+      description: Returns count of users, stores, and ratings.
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Counts retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalUsers:
+                    type: integer
+                  totalStores:
+                    type: integer
+                  totalRatings:
+                    type: integer
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden (Admin role required)
+
+  /admin/users:
+    post:
+      summary: Create a new user (Admin/Owner/Normal)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+                - address
+                - password
+                - role
+              properties:
+                name:
+                  type: string
+                  example: "Jane Doe Smithsonians"
+                email:
+                  type: string
+                  example: "owner@example.com"
+                address:
+                  type: string
+                  example: "456 Market Lane, Bangalore"
+                password:
+                  type: string
+                  example: "OwnerPass123!"
+                role:
+                  type: string
+                  enum: [SYSTEM_ADMIN, NORMAL_USER, STORE_OWNER]
+                  example: "STORE_OWNER"
+      responses:
+        "201":
+          description: User created successfully
+        "400":
+          description: Validation error
+
+    get:
+      summary: List all users
+      description: Returns filtered and sorted list of users. If STORE_OWNER, includes average rating.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: search
+          in: query
+          description: Case-insensitive search on name, email, or address
+          schema:
+            type: string
+        - name: role
+          in: query
+          schema:
+            type: string
+            enum: [SYSTEM_ADMIN, NORMAL_USER, STORE_OWNER]
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum: [name, email, address, role, created_at]
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+      responses:
+        "200":
+          description: Users list retrieved successfully
+
+  /admin/stores:
+    post:
+      summary: Create a new store
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+                - address
+                - ownerId
+              properties:
+                name:
+                  type: string
+                  example: "Roxiler Store Bangalore"
+                email:
+                  type: string
+                  example: "store@roxiler.com"
+                address:
+                  type: string
+                  example: "123 Store Plaza, Bangalore"
+                ownerId:
+                  type: integer
+                  example: 2
+      responses:
+        "201":
+          description: Store registered successfully
+        "400":
+          description: Validation error or owner constraints not met
+
+    get:
+      summary: List all stores
+      description: Returns stores with overall ratings.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: search
+          in: query
+          description: Search by name or address
+          schema:
+            type: string
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum: [name, email, address, average_rating]
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+      responses:
+        "200":
+          description: Stores list retrieved successfully
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
