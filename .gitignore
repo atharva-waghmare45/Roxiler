@@ -25,3 +25,4 @@ pnpm-debug.log*
 Thumbs.db
 .gemini/
 backend_tickets.md
+frontend_tickets.md
