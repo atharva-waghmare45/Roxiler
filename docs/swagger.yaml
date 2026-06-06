@@ -338,6 +338,59 @@ paths:
         "404":
           description: Store not found
 
+  /owner/dashboard:
+    get:
+      summary: Get store owner dashboard metrics
+      description: Returns list of stores owned by this owner with their average ratings and the reviewer list.
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Dashboard metrics retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  stores:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        email:
+                          type: string
+                        address:
+                          type: string
+                        averageRating:
+                          type: number
+                        totalRatings:
+                          type: integer
+                  reviews:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        userName:
+                          type: string
+                        userEmail:
+                          type: string
+                        userAddress:
+                          type: string
+                        ratingValue:
+                          type: integer
+                        storeName:
+                          type: string
+                        ratedAt:
+                          type: string
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden (Store Owner role required)
+
 components:
   securitySchemes:
     BearerAuth:

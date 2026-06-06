@@ -5,6 +5,7 @@ require('dotenv').config();
 const authRoutes = require('./routes/auth.routes');
 const adminRoutes = require('./routes/admin.routes');
 const userRoutes = require('./routes/user.routes');
+const ownerRoutes = require('./routes/owner.routes');
 
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
@@ -26,6 +27,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/owner', ownerRoutes);
 
 // Health check route
 app.get('/health', (req, res) => {

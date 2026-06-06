@@ -25,7 +25,8 @@ roxiler-rating-app/
 ├── docs/                         # Documentation guides
 │   ├── swagger.yaml              # Swagger/OpenAPI 3.0 specs
 │   ├── auth_guide.md             # Authentication guide
-│   └── admin_guide.md            # Admin panel guide
+│   ├── admin_guide.md            # Admin panel guide
+│   └── owner_guide.md            # Owner dashboard guide
 ├── backend_tickets.md            # Backend implementation tickets checklist
 └── package.json                  # Workspaces configuration
 ```
@@ -93,6 +94,12 @@ cd backend
 node src/tests/admin.test.js
 ```
 
+### Running Owner panel API Tests
+```bash
+cd backend
+node src/tests/owner.test.js
+```
+
 ---
 
 ## 📖 API & Flow Documentation
@@ -100,3 +107,4 @@ Refer to the following guides for detailed implementation info:
 - **Swagger spec:** [swagger.yaml](file:///c:/Users/athar/Desktop/Roxiler/docs/swagger.yaml)
 - **User Authentication:** [auth_guide.md](file:///c:/Users/athar/Desktop/Roxiler/docs/auth_guide.md)
 - **Administrator Panel:** [admin_guide.md](file:///c:/Users/athar/Desktop/Roxiler/docs/admin_guide.md)
+- **Store Owner Dashboard:** [owner_guide.md](file:///c:/Users/athar/Desktop/Roxiler/docs/owner_guide.md)
