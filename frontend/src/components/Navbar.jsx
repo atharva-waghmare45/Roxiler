@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { changePassword } from '../api/auth';
 import { toast } from 'react-toastify';
-import { LogOut, Key, User, ShieldAlert } from 'lucide-react';
+import { LogOut, Key, User, ShieldAlert, Menu, X } from 'lucide-react';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
   const [showModal, setShowModal] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -14,7 +15,6 @@ const Navbar = () => {
   const handlePasswordChange = async (e) => {
     e.preventDefault();
 
-    // Client-side validation for new password
     if (newPassword.length < 8 || newPassword.length > 16) {
       toast.error('New password must be between 8 and 16 characters.');
       return;
@@ -66,25 +66,24 @@ const Navbar = () => {
               <span className="text-xl font-bold tracking-tight text-slate-900">RoxRating</span>
             </div>
 
-            {/* Profile & Actions */}
-            <div className="flex items-center space-x-4">
+            {/* Desktop: Profile & Actions (hidden on mobile) */}
+            <div className="hidden md:flex items-center space-x-4">
               <div className="flex items-center space-x-3 rounded-2xl bg-slate-50 px-3 py-1.5 border border-slate-100">
                 <div className="flex h-7 w-7 items-center justify-center rounded-full bg-purple-600 text-xs font-semibold text-white">
                   <User className="h-4 w-4" />
                 </div>
-                <div className="text-left hidden sm:block">
+                <div className="text-left">
                   <p className="text-xs font-semibold text-slate-800 leading-3">{user?.name}</p>
                   <span className="text-[10px] text-slate-500 font-medium">{getRoleLabel(user?.role)}</span>
                 </div>
               </div>
 
-              {/* Action Buttons */}
               <button
                 onClick={() => setShowModal(true)}
                 className="flex items-center space-x-1.5 rounded-xl border border-slate-200 px-3.5 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-slate-900 focus:outline-none"
               >
                 <Key className="h-4 w-4 text-slate-500" />
-                <span className="hidden md:inline">Change Password</span>
+                <span>Change Password</span>
               </button>
 
               <button
@@ -92,7 +91,61 @@ const Navbar = () => {
                 className="flex items-center space-x-1.5 rounded-xl bg-red-50 border border-red-100 px-3.5 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-100 focus:outline-none"
               >
                 <LogOut className="h-4 w-4" />
-                <span className="hidden md:inline">Log Out</span>
+                <span>Log Out</span>
+              </button>
+            </div>
+
+            {/* Mobile: Hamburger toggle (shown on mobile only) */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden flex items-center justify-center h-10 w-10 rounded-xl border border-slate-200 text-slate-600 transition hover:bg-slate-50 focus:outline-none"
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile dropdown menu */}
+        <div
+          className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
+            mobileMenuOpen ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'
+          }`}
+        >
+          <div className="border-t border-slate-100 bg-slate-50/50 px-4 py-4 space-y-3">
+            {/* User profile badge */}
+            <div className="flex items-center space-x-3 rounded-2xl bg-white px-4 py-3 border border-slate-100 shadow-xs">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-purple-600 text-xs font-semibold text-white">
+                <User className="h-4.5 w-4.5" />
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-bold text-slate-900">{user?.name}</p>
+                <span className="text-xs text-slate-500 font-medium">{getRoleLabel(user?.role)}</span>
+              </div>
+            </div>
+
+            {/* Action buttons */}
+            <div className="flex flex-col space-y-2">
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  setShowModal(true);
+                }}
+                className="flex items-center space-x-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 w-full"
+              >
+                <Key className="h-4 w-4 text-slate-500" />
+                <span>Change Password</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  logout();
+                }}
+                className="flex items-center space-x-2 rounded-xl bg-red-50 border border-red-100 px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-100 w-full"
+              >
+                <LogOut className="h-4 w-4" />
+                <span>Log Out</span>
               </button>
             </div>
           </div>
@@ -102,7 +155,7 @@ const Navbar = () => {
       {/* Change Password Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md rounded-3xl border border-slate-100 bg-white p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+          <div className="w-full max-w-md rounded-3xl border border-slate-100 bg-white p-6 shadow-2xl animate-scale-in">
             <div className="mb-4 text-center">
               <h3 className="text-xl font-bold text-slate-950">Change Password</h3>
               <p className="text-sm text-slate-500">Update your credentials to secure your account</p>

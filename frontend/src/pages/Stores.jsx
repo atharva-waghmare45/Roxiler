@@ -30,6 +30,7 @@ const RatingWidget = ({ storeId, initialRating, onRatingChange }) => {
         <button
           key={star}
           type="button"
+          data-testid={`star-btn-${storeId}-${star}`}
           onClick={() => handleRatingClick(star)}
           onMouseEnter={() => setHoverRating(star)}
           onMouseLeave={() => setHoverRating(0)}

@@ -58,16 +58,9 @@ describe('Stores Component Directory & Rating Widget', () => {
       expect(screen.getAllByText('Aaa Store')[0]).toBeInTheDocument();
     });
 
-    // Find star buttons. The rating widget has 5 star buttons. Let's click the 4th star button.
-    const starBtns = screen.getAllByRole('button');
-    // Note: The Navbar also has a Change Password and a Log Out buttons (2 buttons).
-    // Let's filter buttons by clicking them, or find the stars.
-    // The stars are SVG elements inside buttons.
-    // Let's click one of the star buttons.
-    // The first star button starts at index 2 (after Navbar buttons Key/Logout).
-    // Let's find index 2 (1 star) and click index 5 (4 stars).
+    // Click the 4th star button using data-testid (use All variant since mobile+desktop both render)
     act(() => {
-      fireEvent.click(starBtns[5]); // 4-star button
+      fireEvent.click(screen.getAllByTestId('star-btn-1-4')[0]);
     });
 
     await waitFor(() => {
