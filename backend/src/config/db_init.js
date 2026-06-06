@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const bcrypt = require('bcryptjs');
+const { hashPassword } = require('../utils/hash');
 const { query, pool } = require('../db');
 
 const runMigrations = async () => {
@@ -38,7 +38,7 @@ const runMigrations = async () => {
 
     if (adminCheck.rows.length === 0) {
       console.log('Seeding default system administrator...');
-      const hashedPassword = await bcrypt.hash('AdminPassword123!', 10);
+      const hashedPassword = await hashPassword('AdminPassword123!');
       
       await query(
         'INSERT INTO users (name, email, password, address, role) VALUES ($1, $2, $3, $4, $5)',

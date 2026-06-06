@@ -1,4 +1,4 @@
-const bcrypt = require('bcryptjs');
+const { hashPassword } = require('../utils/hash');
 const { validateEmail, validatePassword } = require('../utils/validators');
 const adminService = require('../services/admin.service');
 const authService = require('../services/auth.service');
@@ -34,7 +34,7 @@ const createUser = async (req, res) => {
     }
 
     // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await hashPassword(password);
 
     // Create user via Auth Service
     const newUser = await authService.createUser(name, email, hashedPassword, address, role);

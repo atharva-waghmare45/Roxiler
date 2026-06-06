@@ -1,6 +1,8 @@
 const { validateEmail, validatePassword } = require('../utils/validators');
+const { hashPassword, comparePassword } = require('../utils/hash');
+const { generateToken, verifyToken } = require('../utils/jwt');
 
-const runUtilsTests = () => {
+const runUtilsTests = async () => {
   console.log('\n========================================');
   console.log('STARTING UTILITY UNIT TESTS...');
   console.log('========================================\n');
@@ -50,6 +52,46 @@ const runUtilsTests = () => {
   assert('Password: "Password123" (no special char) should be invalid', validatePassword('Password123') === false);
   assert('Password: empty string should be invalid', validatePassword('') === false);
   assert('Password: null should be invalid', validatePassword(null) === false);
+
+  // -----------------------------------------------------------------
+  // 3. HASHING UTILITY TESTS
+  // -----------------------------------------------------------------
+  try {
+    const plainText = 'MySecretPassword123!';
+    const hash = await hashPassword(plainText);
+    assert('Hashing: should generate a valid hash string', typeof hash === 'string' && hash.length > 0);
+    
+    const isMatch = await comparePassword(plainText, hash);
+    assert('Hashing: correct password comparison should be true', isMatch === true);
+    
+    const isMismatch = await comparePassword('wrong_password', hash);
+    assert('Hashing: incorrect password comparison should be false', isMismatch === false);
+  } catch (err) {
+    assert('Hashing: should run without throwing errors', false, err.message);
+  }
+
+  // -----------------------------------------------------------------
+  // 4. JWT UTILITY TESTS
+  // -----------------------------------------------------------------
+  try {
+    const payload = { id: 42, role: 'NORMAL_USER' };
+    const token = generateToken(payload);
+    assert('JWT: should generate a non-empty token string', typeof token === 'string' && token.length > 0);
+    
+    const decoded = verifyToken(token);
+    assert('JWT: decoded payload should match original data (id)', decoded.id === payload.id);
+    assert('JWT: decoded payload should match original data (role)', decoded.role === payload.role);
+    
+    let threw = false;
+    try {
+      verifyToken(token + 'modified');
+    } catch (err) {
+      threw = true;
+    }
+    assert('JWT: verifying modified/invalid token should throw', threw === true);
+  } catch (err) {
+    assert('JWT: should run without throwing errors', false, err.message);
+  }
 
   console.log('\n========================================');
   console.log('UTILITY RUN COMPLETED');

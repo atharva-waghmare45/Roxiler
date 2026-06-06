@@ -1,5 +1,4 @@
-const jwt = require('jsonwebtoken');
-require('dotenv').config();
+const { verifyToken: jwtVerify } = require('../utils/jwt');
 
 // Middleware to verify the JWT token from the headers
 const verifyToken = (req, res, next) => {
@@ -12,7 +11,7 @@ const verifyToken = (req, res, next) => {
   const token = authHeader.split(' ')[1];
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwtVerify(token);
     req.user = decoded; // Attaches { id, role }
     next();
   } catch (error) {

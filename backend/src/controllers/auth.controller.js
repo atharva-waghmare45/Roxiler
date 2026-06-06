@@ -1,8 +1,6 @@
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-require('dotenv').config();
-
 const { validateEmail, validatePassword } = require('../utils/validators');
+const { hashPassword, comparePassword } = require('../utils/hash');
+const { generateToken } = require('../utils/jwt');
 const authService = require('../services/auth.service');
 
 // POST /api/auth/signup (For NORMAL_USER registration)
@@ -31,7 +29,7 @@ const signup = async (req, res) => {
     }
 
     // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await hashPassword(password);
 
     // Create user via Service
     await authService.createUser(name, email, hashedPassword, address, 'NORMAL_USER');
@@ -59,17 +57,13 @@ const login = async (req, res) => {
     }
 
     // Check password
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await comparePassword(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid email or password.' });
     }
 
     // Generate JWT
-    const token = jwt.sign(
-      { id: user.id, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: '24h' }
-    );
+    const token = generateToken({ id: user.id, role: user.role });
 
     res.json({
       message: 'Login successful.',
@@ -110,13 +104,13 @@ const changePassword = async (req, res) => {
     const currentHashedPassword = user.password;
 
     // Verify current password
-    const isMatch = await bcrypt.compare(oldPassword, currentHashedPassword);
+    const isMatch = await comparePassword(oldPassword, currentHashedPassword);
     if (!isMatch) {
       return res.status(400).json({ message: 'Incorrect current password.' });
     }
 
     // Hash new password and update via Service
-    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+    const hashedNewPassword = await hashPassword(newPassword);
     await authService.updatePassword(userId, hashedNewPassword);
 
     res.json({ message: 'Password updated successfully!' });
