@@ -72,7 +72,7 @@ const Signup = () => {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Johnathan Doe Smithsonians"
+              placeholder="Your name"
               className="mt-1.5 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition duration-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
               required
             />
@@ -85,7 +85,7 @@ const Signup = () => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="e.g. john@example.com"
+              placeholder="Your email"
               className="mt-1.5 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition duration-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
               required
             />
@@ -96,7 +96,7 @@ const Signup = () => {
             <textarea
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              placeholder="e.g. 123 Main Street, Bangalore"
+              placeholder="Your address"
               rows={2}
               className="mt-1.5 w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-slate-900 outline-none transition duration-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 resize-none"
               required
@@ -110,7 +110,7 @@ const Signup = () => {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
+              placeholder="Your password"
               className="mt-1.5 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition duration-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
               required
             />

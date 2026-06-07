@@ -342,9 +342,9 @@ const Admin = () => {
                   <Search className="absolute left-3.5 top-3.5 h-4.5 w-4.5 text-slate-400" />
                   <input
                     type="text"
-                    placeholder="Search users by name, email, or address..."
                     value={userSearch}
                     onChange={(e) => setUserSearch(e.target.value)}
+                    placeholder="Search users..."
                     className="w-full rounded-2xl border border-slate-200 pl-10.5 pr-4 py-3 text-slate-900 text-sm outline-none transition focus:border-purple-500"
                   />
                 </div>
@@ -364,9 +364,9 @@ const Admin = () => {
                 <Search className="absolute left-3.5 top-3.5 h-4.5 w-4.5 text-slate-400" />
                 <input
                   type="text"
-                  placeholder="Search stores by name, email, or address..."
                   value={storeSearch}
                   onChange={(e) => setStoreSearch(e.target.value)}
+                  placeholder="Search stores..."
                   className="w-full rounded-2xl border border-slate-200 pl-10.5 pr-4 py-3 text-slate-900 text-sm outline-none transition focus:border-purple-500"
                 />
               </div>
@@ -499,9 +499,9 @@ const Admin = () => {
                 <label className="block text-xs font-semibold text-slate-600">Name</label>
                 <input
                   type="text"
-                  placeholder="Min 20, Max 60 characters"
                   value={newUser.name}
                   onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+                  placeholder="Your name"
                   className="mt-1.5 w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-slate-900 text-sm outline-none transition focus:border-purple-500"
                   required
                 />
@@ -511,9 +511,9 @@ const Admin = () => {
                 <label className="block text-xs font-semibold text-slate-600">Email Address</label>
                 <input
                   type="email"
-                  placeholder="e.g. user@roxiler.com"
                   value={newUser.email}
                   onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                  placeholder="Your email"
                   className="mt-1.5 w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-slate-900 text-sm outline-none transition focus:border-purple-500"
                   required
                 />
@@ -522,9 +522,9 @@ const Admin = () => {
               <div>
                 <label className="block text-xs font-semibold text-slate-600">Address</label>
                 <textarea
-                  placeholder="Maximum of 400 characters"
                   value={newUser.address}
                   onChange={(e) => setNewUser({ ...newUser, address: e.target.value })}
+                  placeholder="Your address"
                   rows={2}
                   className="mt-1.5 w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-slate-900 text-sm outline-none transition focus:border-purple-500 resize-none"
                   required
@@ -535,9 +535,9 @@ const Admin = () => {
                 <label className="block text-xs font-semibold text-slate-600">Password</label>
                 <input
                   type="password"
-                  placeholder="8-16 chars, 1 upper & 1 special"
                   value={newUser.password}
                   onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+                  placeholder="Your password"
                   className="mt-1.5 w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-slate-900 text-sm outline-none transition focus:border-purple-500"
                   required
                 />
@@ -591,9 +591,9 @@ const Admin = () => {
                 <label className="block text-xs font-semibold text-slate-600">Store Name</label>
                 <input
                   type="text"
-                  placeholder="e.g. Roxiler Super Market"
                   value={newStore.name}
                   onChange={(e) => setNewStore({ ...newStore, name: e.target.value })}
+                  placeholder="Store name"
                   className="mt-1.5 w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-slate-900 text-sm outline-none transition focus:border-indigo-500"
                   required
                 />
@@ -603,9 +603,9 @@ const Admin = () => {
                 <label className="block text-xs font-semibold text-slate-600">Store Email</label>
                 <input
                   type="email"
-                  placeholder="e.g. shop@roxiler.com"
                   value={newStore.email}
                   onChange={(e) => setNewStore({ ...newStore, email: e.target.value })}
+                  placeholder="Store email"
                   className="mt-1.5 w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-slate-900 text-sm outline-none transition focus:border-indigo-500"
                   required
                 />
@@ -614,9 +614,9 @@ const Admin = () => {
               <div>
                 <label className="block text-xs font-semibold text-slate-600">Address</label>
                 <textarea
-                  placeholder="Maximum of 400 characters"
                   value={newStore.address}
                   onChange={(e) => setNewStore({ ...newStore, address: e.target.value })}
+                  placeholder="Store address"
                   rows={2}
                   className="mt-1.5 w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-slate-900 text-sm outline-none transition focus:border-indigo-500 resize-none"
                   required

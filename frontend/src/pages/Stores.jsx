@@ -100,9 +100,9 @@ const Stores = () => {
             <Search className="absolute left-3.5 top-3.5 h-4.5 w-4.5 text-slate-400" />
             <input
               type="text"
-              placeholder="Search stores by name or address..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search stores..."
               className="w-full rounded-2xl border border-slate-200 pl-10.5 pr-4 py-3 text-slate-900 text-sm outline-none transition focus:border-purple-500 bg-white"
             />
           </div>

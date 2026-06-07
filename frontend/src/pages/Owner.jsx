@@ -150,9 +150,9 @@ const Owner = () => {
                   <Search className="absolute left-3 top-3 h-4.5 w-4.5 text-slate-400" />
                   <input
                     type="text"
-                    placeholder="Search stores..."
                     value={storesSearch}
                     onChange={(e) => setStoresSearch(e.target.value)}
+                    placeholder="Search stores..."
                     className="w-full rounded-2xl border border-slate-200 pl-9 pr-4 py-2 text-slate-950 text-xs outline-none transition focus:border-purple-500 bg-white"
                   />
                 </div>
@@ -249,9 +249,9 @@ const Owner = () => {
                   <Search className="absolute left-3 top-3 h-4.5 w-4.5 text-slate-400" />
                   <input
                     type="text"
-                    placeholder="Search reviews..."
                     value={reviewsSearch}
                     onChange={(e) => setReviewsSearch(e.target.value)}
+                    placeholder="Search reviews..."
                     className="w-full rounded-2xl border border-slate-200 pl-9 pr-4 py-2 text-slate-950 text-xs outline-none transition focus:border-purple-500 bg-white"
                   />
                 </div>
