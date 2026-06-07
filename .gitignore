@@ -26,3 +26,9 @@ Thumbs.db
 .gemini/
 backend_tickets.md
 frontend_tickets.md
+
+# Generated Questions
+questions_frontend.md
+questions_backend.md
+questions_database.md
+questions_project.md

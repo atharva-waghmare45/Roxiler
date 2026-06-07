@@ -78,10 +78,13 @@ npm run dev
 # Runs on http://localhost:5173
 ```
 
-### Default Admin Credentials
-After running database migrations, a system administrator is seeded:
-- **Email:** `admin@roxiler.com`
-- **Password:** `AdminPassword123!`
+## 🌐 Live Demo & Credentials
+
+**Live Application:** [https://roxiler-ui.onrender.com](https://roxiler-ui.onrender.com)
+
+### Login Credentials
+
+Please refer to the [login_credentials.md](./login_credentials.md) file in the root directory for the complete list of testing credentials for all user roles (Admin, Normal User, Store Owner).
 
 ---
 
