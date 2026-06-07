@@ -10,9 +10,9 @@ Here are the login credentials for one user of each role, fetched from the datab
 ### 2. Normal User
 - **Role:** `NORMAL_USER`
 - **Email:** `atharvawaghmare878@gmail.com`
-- **Password:** *(Hashed in the database. If you forgot it, use the "Forgot Password?" link on the login page to reset it instantly.)*
+- **Password:** `Waghmare1212@`
 
 ### 3. Store Owner
 - **Role:** `STORE_OWNER`
-- **Email:** `owners+01@gmail.com`
-- **Password:** *(Hashed in the database. If you forgot it, use the "Forgot Password?" link on the login page to reset it instantly.)*
+- **Email:** `waghmarestores@gmail.com`
+- **Password:** `Waghmare1212@`
