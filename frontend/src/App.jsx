@@ -5,6 +5,7 @@ import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import ForgotPassword from './pages/ForgotPassword';
 import Stores from './pages/Stores';
 import Admin from './pages/Admin';
 import Owner from './pages/Owner';
@@ -17,6 +18,7 @@ function App() {
           {/* Public Authentication routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
 
           {/* Protected Normal User Route */}
           <Route

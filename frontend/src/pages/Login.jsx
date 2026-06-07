@@ -71,6 +71,11 @@ const Login = () => {
               className="mt-1.5 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition duration-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
               required
             />
+            <div className="mt-2 flex justify-end">
+              <Link to="/forgot-password" className="text-sm font-semibold text-purple-600 hover:text-purple-700 hover:underline">
+                Forgot Password?
+              </Link>
+            </div>
           </div>
 
           <button

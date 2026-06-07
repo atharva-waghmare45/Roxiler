@@ -120,10 +120,60 @@ const changePassword = async (req, res) => {
   }
 };
 
+// POST /api/auth/verify-email (Forgot Password Step 1)
+const verifyEmail = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required.' });
+    }
+
+    const user = await authService.findUserByEmail(email);
+    if (!user) {
+      return res.status(404).json({ message: 'Email not found.' });
+    }
+
+    res.json({ message: 'Email verified successfully.', success: true });
+  } catch (error) {
+    console.error('Verify email error:', error);
+    res.status(500).json({ message: 'Internal server error.' });
+  }
+};
+
+// POST /api/auth/reset-password-direct (Forgot Password Step 2)
+const resetPasswordDirect = async (req, res) => {
+  try {
+    const { email, newPassword } = req.body;
+
+    if (!email || !newPassword) {
+      return res.status(400).json({ message: 'Email and new password are required.' });
+    }
+
+    if (!validatePassword(newPassword)) {
+      return res.status(400).json({ message: 'New password must be 8-16 characters and contain at least one uppercase letter and one special character.' });
+    }
+
+    const user = await authService.findUserByEmail(email);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    const hashedNewPassword = await hashPassword(newPassword);
+    await authService.updatePassword(user.id, hashedNewPassword);
+
+    res.json({ message: 'Password updated successfully!' });
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({ message: 'Internal server error.' });
+  }
+};
+
 module.exports = {
   signup,
   login,
   changePassword,
+  verifyEmail,
+  resetPasswordDirect,
   validateEmail,
   validatePassword
 };
